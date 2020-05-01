@@ -4,22 +4,48 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class Board {
+public class Board implements Cloneable {
 	private int width;
 	private int height;
 	private int initBombs;
 	private List<Cell> cells;
 	private boolean failed = false;
 	
-	public Board(int width, int height, int nBombs) {
+	public Board(int width, int height, int nBombs, boolean initialize) {
 		if (width <= 0 || height <= 0 || nBombs < 0 || nBombs >= width * height) {
 			throw new IllegalArgumentException();
 		}
 		this.width = width;
 		this.height = height;
 		this.initBombs = nBombs;
-		setupCells(width, height, nBombs);
-		buildNeighborMap();
+		if (initialize) {
+			setupCells(width, height, nBombs);
+			buildNeighborMap();
+		}
+	}
+	
+	public Board(int width, int height, int nBombs) {
+		this(width, height, nBombs, true);
+	}
+	
+	public void replaceWith(Board b) {
+		width = b.width;
+		height = b.height;
+		initBombs = b.initBombs;
+		cells = b.cells;
+		failed = b.failed;
+	}
+	
+	@Override
+	public Board clone() {
+		Board b = new Board(width, height, initBombs);
+		var newCells = new ArrayList<Cell>();
+		for (int i=0; i<cells.size(); i++) {
+			newCells.add(cells.get(i).clone());
+		}
+		b.cells = newCells;
+		b.failed = failed;
+		return b;
 	}
 	
 	private void setupCells(int width, int height, int nBombs) {
@@ -44,7 +70,7 @@ public class Board {
 	}
 	
 	// return -1 on error.
-	private int getCellIndex(int base, Direction direction) {
+	public int getCellIndex(int base, Direction direction) {
 		var cr = fromIndex(base);
 		var column = cr[0];
 		var row = cr[1];
@@ -138,9 +164,14 @@ public class Board {
 	}
 	
 	private static char charOfCell(Cell c, boolean discloseBomb) {
+		if (c.isFlagged()) {
+			return discloseBomb && !c.hasBomb() ? 'f' : 'F';
+		}
+		
 		if (discloseBomb && c.hasBomb()) {
 			return '+';
 		}
+		
 		if (c.isOpened()) {
 			if (c.getNeighborBombs() == 0) {
 				return ' ';
@@ -227,5 +258,9 @@ public class Board {
 
 	public void toggleFlag(int column, int row) {
 		toggleFlag(fromColumnRow(column, row));
+	}
+	
+	public int getTotalCells() {
+		return height * width;
 	}
 }

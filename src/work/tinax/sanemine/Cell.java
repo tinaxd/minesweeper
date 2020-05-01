@@ -1,6 +1,6 @@
 package work.tinax.sanemine;
 
-public class Cell {
+public class Cell implements Cloneable {
 	private boolean hasBomb;
 	private CellState state;
 	
@@ -49,5 +49,12 @@ public class Cell {
 	
 	public boolean isFlagged() {
 		return state == CellState.FLAGGED;
+	}
+	
+	@Override
+	public Cell clone() {
+		Cell c = new Cell(hasBomb, state);
+		c.setNeighborBombs(neighborBombs);
+		return c;
 	}
 }

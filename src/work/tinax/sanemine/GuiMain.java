@@ -14,7 +14,7 @@ public class GuiMain extends Application {
 		primaryStage.show();
 	}
 	
-	public static void main(String[] args) {
+	public static void guiMain(String[] args) {
 		launch(args);
 	}
 	
